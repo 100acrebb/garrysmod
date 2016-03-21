@@ -98,7 +98,7 @@ function GM:PlayerCanSeePlayersChat(text, team_only, listener, speaker)
 		if isentity(speaker) then
 			return true
 		else
-			return false
+			return true -- allow console to communicate
 		end
 	end
 
