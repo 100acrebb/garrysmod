@@ -56,6 +56,7 @@ function PrintTable( t, indent, done )
 			done[ value ] = true
 			Msg( tostring( key ) .. ":" .. "\n" )
 			PrintTable ( value, indent + 2, done )
+			done[ value ] = nil
 
 		else
 
@@ -108,6 +109,16 @@ end
 -----------------------------------------------------------]]
 function Model( name )
 	util.PrecacheModel( name )
+	return name
+end
+
+--[[---------------------------------------------------------
+   Convenience function to precache a particle
+-----------------------------------------------------------]]
+function Particle( name )
+	if ( CLIENT ) then
+		game.AddParticles( name )
+	end
 	return name
 end
 
@@ -368,6 +379,25 @@ if ( CLIENT ) then
 		input.SetCursorPos( StoredCursorPos.x, StoredCursorPos.y )
 
 	end
+
+end
+
+--
+-- This is supposed to be clientside, but was exposed to both states for years due to a bug.
+--
+function CreateClientConVar( name, default, shouldsave, userdata, helptext )
+
+	local iFlags = 0
+
+	if ( shouldsave || shouldsave == nil ) then
+		iFlags = bit.bor( iFlags, FCVAR_ARCHIVE )
+	end
+
+	if ( userdata ) then
+		iFlags = bit.bor( iFlags, FCVAR_USERINFO )
+	end
+
+	return CreateConVar( name, default, iFlags, helptext )
 
 end
 
