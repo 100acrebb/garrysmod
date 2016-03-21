@@ -36,6 +36,13 @@ function TOOL:LeftClick( trace )
 	local dupe = self:GetOwner().CurrentDupe
 	if ( !dupe ) then return end
 
+	if (URS) then
+		for k, ent in pairs( dupe.Entities ) do
+			-- print("duplicator", ent.Class, ent.Model)
+			if (URS.Check( self:GetOwner(), "sent", ent.Class ) == false or URS.Check( self:GetOwner(), "prop", ent.Model ) == false) then return end
+		end
+	end
+	
 	--
 	-- We want to spawn it flush on thr ground. So get the point that we hit
 	-- and take away the mins.z of the bounding box of the dupe.
