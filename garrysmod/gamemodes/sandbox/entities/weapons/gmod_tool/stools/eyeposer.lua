@@ -2,6 +2,17 @@
 TOOL.Category = "Poser"
 TOOL.Name = "#tool.eyeposer.name"
 
+local function SetEyeTarget( Player, Entity, Data )
+
+	if ( Data.EyeTarget ) then Entity:SetEyeTarget( Data.EyeTarget ) end
+
+	if ( SERVER ) then
+		duplicator.StoreEntityModifier( Entity, "eyetarget", Data )
+	end
+
+end
+duplicator.RegisterEntityModifier( "eyetarget", SetEyeTarget )
+
 local function ConvertRelativeToEyesAttachment( Entity, Pos )
 
 	if ( Entity:IsNPC() ) then
@@ -34,20 +45,20 @@ function TOOL:LeftClick( trace )
 		local eyeattachment = self.SelectedEntity:LookupAttachment( "eyes" )
 		if ( eyeattachment == 0 ) then return end
 		
-		self:GetWeapon():SetNetworkedEntity( 0, self.SelectedEntity )
+		self:GetWeapon():SetNWEntity( 0, self.SelectedEntity )
 
 	return true end
 
 	local selectedent = self.SelectedEntity
 	self.SelectedEntity = nil
-	self:GetWeapon():SetNetworkedEntity( 0, NULL )
+	self:GetWeapon():SetNWEntity( 0, NULL )
 	
 	if ( !IsValid( selectedent ) ) then return end
 	
 	local LocalPos = ConvertRelativeToEyesAttachment( selectedent, trace.HitPos )
 	if ( !LocalPos ) then return false end
 	
-	selectedent:SetEyeTarget( LocalPos )
+	SetEyeTarget( self:GetOwner(), selectedent, { EyeTarget = LocalPos } )
 	
 	return true
 
@@ -58,7 +69,7 @@ end
 -----------------------------------------------------------]]
 function TOOL:RightClick( trace )
 
-	self:GetWeapon():SetNetworkedEntity( 0, NULL )
+	self:GetWeapon():SetNWEntity( 0, NULL )
 	self.SelectedEntity = nil
 	
 	if ( !IsValid( trace.Entity ) ) then return end
@@ -69,7 +80,7 @@ function TOOL:RightClick( trace )
 	local LocalPos = ConvertRelativeToEyesAttachment( trace.Entity, pos )
 	if ( !LocalPos ) then return false end
 	
-	trace.Entity:SetEyeTarget( LocalPos )
+	SetEyeTarget( self:GetOwner(), trace.Entity, { EyeTarget = LocalPos } )
 	
 	return true
 	
@@ -82,7 +93,7 @@ if ( CLIENT ) then
 	-----------------------------------------------------------]]
 	function TOOL:DrawHUD()
 	
-		local selected = self:GetWeapon():GetNetworkedEntity( 0 )
+		local selected = self:GetWeapon():GetNWEntity( 0 )
 		
 		if ( !IsValid( selected ) ) then return end
 		

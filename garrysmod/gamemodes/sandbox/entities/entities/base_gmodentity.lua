@@ -31,12 +31,12 @@ function ENT:Think()
 end
 
 function ENT:SetOverlayText( text )
-	self:SetNetworkedString( "GModOverlayText", text )
+	self:SetNWString( "GModOverlayText", text )
 end
 
 function ENT:GetOverlayText()
 
-	local txt = self:GetNetworkedString( "GModOverlayText" )
+	local txt = self:GetNWString( "GModOverlayText" )
 
 	if ( txt == "" ) then
 		return ""
@@ -52,7 +52,6 @@ function ENT:GetOverlayText()
 
 end
 
-
 function ENT:SetPlayer( ply )
 
 	if ( IsValid(ply) ) then
@@ -60,7 +59,7 @@ function ENT:SetPlayer( ply )
 		self:SetVar( "Founder", ply )
 		self:SetVar( "FounderIndex", ply:UniqueID() )
 
-		self:SetNetworkedString( "FounderName", ply:Nick() )
+		self:SetNWString( "FounderName", ply:Nick() )
 
 	end
 
@@ -85,6 +84,6 @@ function ENT:GetPlayerName()
 		return ply:Nick()
 	end
 
-	return self:GetNetworkedString( "FounderName" )
+	return self:GetNWString( "FounderName" )
 
 end

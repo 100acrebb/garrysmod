@@ -2,8 +2,7 @@
 AddCSLuaFile()
 DEFINE_BASECLASS( "base_gmodentity" )
 
-ENT.Spawnable = false
-ENT.RenderGroup = RENDERGROUP_BOTH
+ENT.PrintName = "Thruster"
 
 local matHeatWave = Material( "sprites/heatwave" )
 local matFire = Material( "effects/fire_cloud1" )
@@ -14,27 +13,27 @@ if ( CLIENT ) then
 end
 
 function ENT:SetEffect( name )
-	self:SetNetworkedString( "Effect", name )
+	self:SetNWString( "Effect", name )
 end
 
 function ENT:GetEffect( name )
-	return self:GetNetworkedString( "Effect", "" )
+	return self:GetNWString( "Effect", "" )
 end
 
 function ENT:SetOn( boolon )
-	self:SetNetworkedBool( "On", boolon, true )
+	self:SetNWBool( "On", boolon, true )
 end
 
 function ENT:IsOn( name )
-	return self:GetNetworkedBool( "On", false )
+	return self:GetNWBool( "On", false )
 end
 
 function ENT:SetOffset( v )
-	self:SetNetworkedVector( "Offset", v, true )
+	self:SetNWVector( "Offset", v, true )
 end
 
 function ENT:GetOffset( name )
-	return self:GetNetworkedVector( "Offset" )
+	return self:GetNWVector( "Offset" )
 end
 
 function ENT:Initialize()
@@ -88,15 +87,9 @@ function ENT:Draw()
 
 	if ( self.ShouldDraw == 0 ) then return end
 
-	BaseClass.Draw( self )
+	self:DrawModel()
 
-end
-
-function ENT:DrawTranslucent()
-
-	if ( self.ShouldDraw == 0 ) then return end
-
-	BaseClass.DrawTranslucent( self )
+	if ( halo.RenderedEntity() == self ) then return end
 
 	if ( !self:IsOn() ) then
 		self.OnStart = nil
@@ -108,7 +101,6 @@ function ENT:DrawTranslucent()
 
 	local EffectThink = self[ "EffectDraw_" .. self:GetEffect() ]
 	if ( EffectThink ) then EffectThink( self ) end
-
 end
 
 function ENT:Think()
@@ -351,8 +343,8 @@ function ENT:SetForce( force, mul )
 		self:SetOffset( self.ThrustOffsetR )
 	end
 
-	self:SetNetworkedVector( 1, self.ForceAngle )
-	self:SetNetworkedVector( 2, self.ForceLinear )
+	self:SetNWVector( 1, self.ForceAngle )
+	self:SetNWVector( 2, self.ForceLinear )
 
 	self:SetOverlayText( "Force: " .. math.floor( self.force ) )
 

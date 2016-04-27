@@ -1,7 +1,4 @@
 
-IncludeCS( "ai_translations.lua" )
-IncludeCS( "sh_anim.lua" )
-
 -- Variables that are used on both client and server
 
 SWEP.Author			= ""
@@ -37,14 +34,6 @@ function SWEP:Initialize()
 
 	self:SetHoldType( "pistol" )
 
-end
-
-
---[[---------------------------------------------------------
-   Name: SWEP:Precache( )
-   Desc: Use this function to precache stuff
------------------------------------------------------------]]
-function SWEP:Precache()
 end
 
 
