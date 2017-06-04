@@ -34,7 +34,7 @@ function MenuController( $scope, $rootScope )
 		$( '.popup:not(.language_list)' ).hide();
 		$( '.language_list' ).toggle();
 	}
-	
+
 	$scope.ToggleGames = function ()
 	{
 		$( '.popup:not(.games_list)' ).hide();
@@ -64,7 +64,6 @@ function MenuController( $scope, $rootScope )
 		$( '.language_list' ).hide();
 	}
 
-
 	$scope.MenuOption = function ( btn, v )
 	{
 		lua.Run( "RunGameUICommand( '" + v + "' )" )
@@ -83,7 +82,7 @@ function MenuController( $scope, $rootScope )
 	lua.Run( "UpdateMapList()" );
 
 	//
-	// Languages 
+	// Languages
 	//
 	$rootScope.Languages = []
 	$rootScope.Language = 'en';
@@ -99,7 +98,7 @@ function MenuController( $scope, $rootScope )
 
 	//
 	// Controls
-	// 
+	//
 	$scope.BackToGame = function()
 	{
 		lua.Run( "gui.HideGameUI()" );
@@ -142,7 +141,7 @@ function MenuController( $scope, $rootScope )
 	$scope.InGame = false;
 
 	// Kinect options
-	$scope.kinect = 
+	$scope.kinect =
 	{
 		available: util.MotionSensorAvailable(),
 		show_color: false,
@@ -171,6 +170,10 @@ function MenuController( $scope, $rootScope )
 			lua.Run( "RunConsoleCommand( \"sensor_color_show\", %s )", $scope.kinect.show_color ? "1" : "0" );
 		}
 	}
+
+	util.MotionSensorAvailable( function( available ) {
+		$scope.kinect.available = available;
+	} );
 }
 
 function SetInGame( bool )
@@ -214,7 +217,6 @@ function UpdateCurrentGamemode( gm )
 	UpdateDigest( gScope, 50 );
 }
 
-
 function GetGamemodeInfo( name )
 {
 	name = name.toLowerCase();
@@ -228,7 +230,7 @@ function GetHighestKey( obj )
 	var h = 0;
 	var v = "";
 
-	for ( k in obj ) 
+	for ( k in obj )
 	{
 		if ( obj[k] > h )
 		{
@@ -282,7 +284,7 @@ function UpdateMaps( inmaps )
 			MapIndex[ inmaps[k][v].toLowerCase() ] = true;
 		}
 
-		mapList.push( 
+		mapList.push(
 		{
 			order: order,
 			category: k,
@@ -313,7 +315,7 @@ function UpdateLanguage( lang )
 {
 	gScope.Language = lang;
 	gScope.$broadcast( "languagechanged" );
-	UpdateDigest( gScope, 50 );	
+	UpdateDigest( gScope, 50 );
 }
 
 function UpdateGames( games )
@@ -336,7 +338,7 @@ function UpdateVersion( version, branch )
 {
 	gScope.Version 	= 	version;
 	gScope.Branch 	= 	branch;
-	
+
 	UpdateDigest( gScope, 100 );
 }
 

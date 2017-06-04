@@ -9,6 +9,26 @@ math.randomseed( os.time() )
 --
 Format = string.format
 
+--
+-- Send C the flags for any materials we want to create
+--
+local C_Material = Material
+
+function Material( name, words )
+
+	if ( !words ) then return C_Material( name ) end
+	
+	local str = (words:find("vertexlitgeneric") and "1" or "0")
+	str = str .. (words:find("nocull") and "1" or "0")
+	str = str .. (words:find("alphatest") and "1" or "0")
+	str = str .. (words:find("mips") and "1" or "0")
+	str = str .. (words:find("noclamp") and "1" or "0")
+	str = str .. (words:find("smooth") and "1" or "0")
+	
+	return C_Material( name, str )
+
+end
+
 --[[---------------------------------------------------------
 	IsTableOfEntitiesValid
 -----------------------------------------------------------]]
@@ -406,10 +426,10 @@ end
 
 local ConVarCache = {}
 
-local function GetConVarCached( name )
+function GetConVar( name )
 	local c = ConVarCache[ name ]
 	if not c then
-		c = GetConVar( name )
+		c = GetConVar_Internal( name )
 		if not c then
 			return
 		end
@@ -422,12 +442,12 @@ end
 
 function GetConVarNumber( name )
 	if ( name == "maxplayers" ) then return game.MaxPlayers() end -- Backwards compatibility
-	local c = GetConVarCached( name )
+	local c = GetConVar( name )
 	return ( c and c:GetFloat() ) or 0
 end
 
 function GetConVarString( name )
 	if ( name == "maxplayers" ) then return tostring( game.MaxPlayers() ) end -- ew
-	local c = GetConVarCached( name )
+	local c = GetConVar( name )
 	return ( c and c:GetString() ) or ""
 end

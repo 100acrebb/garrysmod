@@ -86,6 +86,7 @@ local function UpdateMaps()
 	MapNames[ "l4d_" ] = "Left 4 Dead"
 
 	MapPatterns[ "^c[%d]m" ] = "Left 4 Dead 2"
+	MapPatterns[ "^c1[%d]m" ] = "Left 4 Dead 2"
 	MapNames[ "curling_stadium" ] = "Left 4 Dead 2"
 	MapNames[ "tutorial_standards" ] = "Left 4 Dead 2"
 	MapNames[ "tutorial_standards_vs" ] = "Left 4 Dead 2"
@@ -351,6 +352,8 @@ function LoadLastMap()
 	local cat = t[ 2 ] or "Sandbox"
 
 	cat = string.gsub( cat, "'", "\\'" )
+
+	if ( !file.Exists( "maps/" .. map .. ".bsp", "GAME" ) ) then return end
 
 	pnlMainMenu:Call( "SetLastMap('" .. map .. "','" .. cat .. "')" )
 

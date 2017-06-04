@@ -10,31 +10,31 @@ function WorkshopFileBase( namespace, requiredtags )
 
 	ret.HTML = nil
 
-	function ret:Fetch( type, offset, perpage, extratags )
-
-		if ( type == "local" ) then
-			return self:FetchLocal( offset, perpage )
-		end
-
-		if ( type == "subscribed" ) then
-			return self:FetchSubscribed( offset, perpage )
-		end
-
-		local userid = "0"
-
-		if ( type == "mine" ) then userid = "1" end
+	function ret:Fetch( type, offset, perpage, extratags, searchText )
 
 		local tags = table.Copy( requiredtags )
-
 		for k, v in pairs( extratags ) do
 			if ( v == "" ) then continue end
 			table.insert( tags, v )
 		end
 
-		local cachename = type.."-"..string.Implode( "/", tags ) .. offset .. "-" .. perpage .. "-" .. userid
+		if ( type == "local" ) then
+			return self:FetchLocal( offset, perpage )
+		end
+		if ( type == "subscribed" ) then
+			return self:FetchSubscribed( offset, perpage, tags, searchText, false )
+		end
+		if ( type == "subscribed_ugc" ) then
+			return self:FetchSubscribed( offset, perpage, tags, searchText, true )
+		end
+
+		local userid = "0"
+		if ( type == "mine" ) then userid = "1" end
+
+		local cachename = type .. "-" .. string.Implode( "/", tags ) .. offset .. "-" .. perpage .. "-" .. userid
 
 		if ( ListCache[ cachename ] ) then
-			self:FillFileInfo( ListCache[ cachename ] ) 
+			self:FillFileInfo( ListCache[ cachename ] )
 			return
 		end
 
@@ -45,25 +45,53 @@ function WorkshopFileBase( namespace, requiredtags )
 
 	end
 
-	function ret:FetchSubscribed( offset, perpage )
+	function ret:FetchSubscribed( offset, perpage, tags, searchText, isUGC )
 
-		local subscriptions = engine.GetAddons()
-		
-		--
-		-- Reverse the table - so newest files are on top (todo - properly)
-		--
-		subscriptions = table.Reverse( subscriptions )
-		
+		local subscriptions = {}
+		if ( isUGC ) then
+			subscriptions = engine.GetUserContent()
+		else
+			subscriptions = engine.GetAddons()
+		end
+
+		-- Newest files are on top
+		table.sort( subscriptions, function( a, b )
+			if ( a.timeadded == 0 ) then a.timeadded = os.time() end -- For newly added addons (within game session)
+			if ( b.timeadded == 0 ) then a.timeadded = os.time() end
+			return a.timeadded > b.timeadded
+		end )
+
+		-- First build a list of items that fit our search terms
+		local searchedItems = {}
+		for id, sub in pairs( subscriptions ) do
+
+			-- Search for tags
+			local found = true
+			for id, tag in pairs( tags ) do
+				if ( !sub.tags:lower():find( tag ) ) then found = false end
+			end
+			if ( !found ) then continue end
+
+			-- Search for searchText
+			if ( searchText:Trim() != "" ) then
+				if ( !sub.title:lower():find( searchText:lower() ) ) then continue end
+			end
+
+			searchedItems[ #searchedItems + 1 ] = sub
+
+		end
+
+		-- Build the page!
 		local data = {
-			totalresults = #subscriptions,
+			totalresults = #searchedItems,
 			results = {}
 		}
 
 		local i = 0
 		while ( i < perpage ) do
 
-			if ( subscriptions[ offset + i + 1 ] ) then
-				table.insert( data.results, subscriptions[ offset + i + 1 ].wsid )
+			if ( searchedItems[ offset + i + 1 ] ) then
+				table.insert( data.results, searchedItems[ offset + i + 1 ].wsid )
 			end
 
 			i = i + 1
@@ -75,7 +103,7 @@ function WorkshopFileBase( namespace, requiredtags )
 	end
 
 	function ret:FillFileInfo( results )
-	
+
 		--
 		-- File info failed..
 		--
@@ -93,7 +121,7 @@ function WorkshopFileBase( namespace, requiredtags )
 		for k, v in pairs( results.results ) do
 
 			--
-			-- Got it cached? 
+			-- Got it cached?
 			--
 			if ( PreviewCache[ v ] ) then
 				self.HTML:Call( namespace .. ".ReceiveImage( \"" .. v .. "\", \"" .. PreviewCache[ v ] .. "\" )" )
@@ -172,8 +200,8 @@ function WorkshopFileBase( namespace, requiredtags )
 
 	function ret:Publish( filename, image )
 
-		//MsgN( "PUBLISHING ", filename )
-		//MsgN( "Image ", image )
+		--MsgN( "PUBLISHING ", filename )
+		--MsgN( "Image ", image )
 
 		--
 		-- Create the window

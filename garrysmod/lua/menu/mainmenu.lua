@@ -1,5 +1,6 @@
 
 include( 'background.lua' )
+include( 'cef_credits.lua' )
 
 pnlMainMenu = nil
 
@@ -30,7 +31,7 @@ function PANEL:Init()
 
 	self:MakePopup()
 	self:SetPopupStayAtBack( true )
-	
+
 	-- If the console is already open, we've got in its way.
 	if ( gui.IsConsoleVisible() ) then
 		gui.ShowConsole()
@@ -169,7 +170,8 @@ function UpdateServerSettings()
 
 	local array = {
 		hostname = GetConVarString( "hostname" ),
-		sv_lan = GetConVarString( "sv_lan" )
+		sv_lan = GetConVarString( "sv_lan" ),
+		p2p_enabled = GetConVarString( "p2p_enabled" )
 	}
 
 	local settings_file = file.Read( "gamemodes/" .. engine.ActiveGamemode() .. "/" .. engine.ActiveGamemode() .. ".txt", true )
@@ -184,6 +186,7 @@ function UpdateServerSettings()
 
 			for k, v in pairs( array.settings ) do
 				v.Value = GetConVarString( v.name )
+				v.Singleplayer = v.singleplayer && true || false
 			end
 
 		end
@@ -215,9 +218,13 @@ local ShouldStop = {}
 function GetServers( type, id )
 
 	ShouldStop[ type ] = false
+	Servers[ type ] = {}
 
 	local data = {
 		Callback = function( ping , name, desc, map, players, maxplayers, botplayers, pass, lastplayed, address, gamemode, workshopid )
+
+			if Servers[ type ] && Servers[ type ][ address ] then return end
+			Servers[ type ][ address ] = true
 
 			name = string.JavascriptSafe( name )
 			desc = string.JavascriptSafe( desc )
@@ -225,7 +232,7 @@ function GetServers( type, id )
 			address = string.JavascriptSafe( address )
 			gamemode = string.JavascriptSafe( gamemode )
 			workshopid = string.JavascriptSafe( workshopid )
-			
+
 			if ( pass ) then pass = "true" else pass = "false" end
 
 			pnlMainMenu:Call( "AddServer( '"..type.."', '"..id.."', "..ping..", \""..name.."\", \""..desc.."\", \""..map.."\", "..players..", "..maxplayers..", "..botplayers..", "..pass..", "..lastplayed..", \""..address.."\", \""..gamemode.."\", \""..workshopid.."\" )" )
@@ -236,6 +243,7 @@ function GetServers( type, id )
 
 		Finished = function()
 			pnlMainMenu:Call( "FinishedServeres( '" .. type .. "' )" )
+			Servers[ type ] = {}
 		end,
 
 		Type = type,
@@ -250,6 +258,7 @@ end
 function DoStopServers( type )
 	pnlMainMenu:Call( "FinishedServeres( '" .. type .. "' )" )
 	ShouldStop[ type ] = true
+	Servers[ type ] = {}
 end
 
 --
